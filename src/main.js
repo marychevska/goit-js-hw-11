@@ -1,10 +1,10 @@
-import iziToast from "izitoast";
+import iziToast from `izitoast`;
 import "izitoast/dist/css/iziToast.min.css";
 
-import SimpleLightbox from "simplelightbox";
+import SimpleLightbox from `simplelightbox`;
 import "simplelightbox/dist/simple-lightbox.min.css";
 
-import 'loaders.css/loaders.min.css';
+import "loader.css/loader.min.css";
 
 // Імпорт функцій з файлів
 import { responseData } from './js/pixabay-api';
