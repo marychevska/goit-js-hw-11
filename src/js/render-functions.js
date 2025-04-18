@@ -1,55 +1,50 @@
-export function renderImages(images) {
-  console.log('Дані для рендерингу:', images); // Додано для перевірки даних
-  const gallery = document.querySelector('.gallery');
-  const galleryArray = images.map(image => {
-    const {
-      webformatURL,
-      largeImageURL,
-      likes,
-      views,
-      tags,
-      comments,
-      downloads,
-    } = image;
-    const li = document.createElement('li');
-    li.classList.add('gallery-item');
-    const link = document.createElement('a');
-    link.classList.add('gallery-link');
-    link.href = largeImageURL;
-    const img = document.createElement('img');
-    img.classList.add('gallery-image');
-    img.src = webformatURL;
-    img.alt = tags;
-    img.width = 360;
-    img.height = 200;
-    li.appendChild(link);
-    link.appendChild(img);
-    const infoContainer = document.createElement('div');
-    infoContainer.classList.add('gallery-item-info');
-    infoContainer.innerHTML = `
-  <div class="item-info-container">
-    <span class="description-name">Likes</span>
-    <span class="description-counts">${likes}</span>
-  </div>
-  <div class="item-info-container">
-    <span class="description-name">Views</span>
-    <span class="description-counts">${views}</span>
-  </div>
-  <div class="item-info-container">
-    <span class="description-name">Comments</span>
-    <span class="description-counts">${comments}</span>
-  </div>
-  <div class="item-info-container">
-    <span class="description-name">Downloads</span>
-    <span class="description-counts">${downloads}</span>
-  </div>
-`;
-    li.appendChild(infoContainer);
-    return li;
-  });
-  gallery.append(...galleryArray);
+const gallery = document.querySelector('.gallery');
+const loader = document.querySelector('.loader-js');
+
+export function createGallery(images) {
+  gallery.innerHTML = images
+    .map(
+      ({
+        webformatURL,
+        largeImageURL,
+        tags,
+        likes,
+        views,
+        comments,
+        downloads,
+      }) => `<li class="gallery-item">
+  <a class="item-link" href="${largeImageURL}">
+    <img class="img" src="${webformatURL}" alt="${tags}" />
+    <ul class="statistic-list">
+      <li class="statistic-item">
+        <p class="statistic-text">Likes</p>
+        <p class="statistic-value">${likes}</p>
+      </li>
+      <li class="statistic-item">
+        <p class="statistic-text">Views</p>
+        <p class="statistic-value">${views}</p>
+      </li>
+      <li class="statistic-item">
+        <p class="statistic-text">Comments</p>
+        <p class="statistic-value">${comments}</p>
+      </li>
+      <li class="statistic-item">
+        <p class="statistic-text">Downloads</p>
+        <p class="statistic-value">${downloads}</p>
+      </li>
+    </ul></a
+  >
+</li>`
+    )
+    .join('');
 }
+
 export function clearGallery() {
-  const gallery = document.querySelector('.gallery');
   gallery.innerHTML = '';
+}
+export function showLoader() {
+  loader.classList.add('loader');
+}
+export function hideLoader() {
+  loader.classList.remove('loader');
 }

@@ -1,84 +1,90 @@
-import iziToast from `izitoast`;
-import "izitoast/dist/css/iziToast.min.css";
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
 
-import SimpleLightbox from `simplelightbox`;
-import "simplelightbox/dist/simple-lightbox.min.css";
+import iziToast from 'izitoast';
+import 'izitoast/dist/css/iziToast.min.css';
 
-import "loader.css/loader.min.css";
+import getImagesByQuery from './js/pixabay-api';
+import {
+  createGallery,
+  clearGallery,
+  showLoader,
+  hideLoader,
+} from './js/render-functions';
 
-// Імпорт функцій з файлів
-import { responseData } from './js/pixabay-api';
-import { renderImages, clearGallery } from './js/render-functions';
+document.querySelector('.span.loader').classList.remove('loader');
 
-// Імпорт іконки
-import iconSvgError from './img/Group.png';
-
-// Cам код
 const form = document.querySelector('.form');
-const loaderElement = document.querySelector('.loader');
 const gallery = document.querySelector('.gallery');
 
-// Налаштування повідомлення про помилку
-const errorMesage = {
-  message: 'Sorry, there are no images matching your search query. Please try again!',
-  messageColor: '#fff',
-  backgroundColor: '#ef4040',
-  position: 'topRight',
-  iconUrl: iconSvgError,
+const errorMessage = {
+  iconColor: '#ffffff',
+  message:
+    'Sorry, there are no images matching your search query. Please try again!',
+  backgroundColor: '#B51B1B',
+  messageColor: '#ffffff',
+  iconUrl: './img/error.svg',
 };
 
-// Ініціалізація галереї
-let lightbox = new SimpleLightbox('.gallery a', {
-  captions: true,
-  captionsData: 'alt',
-  captionType: 'attr',
-  captionDelay: 250,
-  animationSpeed: 350,
-  captionPosition: 'bottom',
-});
+const errorServerConnection = {
+  title: 'ERROR',
+  titleColor: '#ffffff',
+  message: 'Error connecting to server',
+  messageColor: '#ffffff',
+  iconUrl: './img/error.svg',
+  iconColor: '#ffffff',
+  backgroundColor: '#B51B1B',
+};
 
-// Додаємо обробники подій на галерею
-lightbox.on('show.simplelightbox', function () {});
-lightbox.on('error.simplelightbox', function (e) {
-  console.log(e);
-});
+form.addEventListener('submit', handleSubmit);
 
-
-form.addEventListener('submit', searchImages);
-
-function searchImages(event) {
+function handleSubmit(event) {
   event.preventDefault();
-  // Отримуємо текст запиту з поля вводу
-  const query = event.currentTarget.elements.searchQuery.value.trim();
-  if (!query) {
+
+  gallery.innerHTML = '';
+
+  const usersRequest = event.target.elements.text.value.trim();
+  checkInput(usersRequest);
+  showLoader();
+
+  getImagesByQuery(usersRequest)
+    .then(response => {
+      const array = response.data.hits;
+      emptyInputCheck(array);
+      hideLoader();
+      createGallery(array);
+      createLightBox();
+    })
+    .catch(error => {
+      console.log(error.message);
+      hideLoader();
+      iziToast.show(errorServerConnection);
+    });
+
+  form.reset();
+}
+
+function createLightBox() {
+  let galleryLightBox = new SimpleLightbox('.gallery li a', {
+    captionsData: 'alt',
+    captionDelay: 250,
+  });
+  galleryLightBox.refresh();
+}
+
+function checkInput(usersRequest) {
+  if (!usersRequest) {
+    iziToast.show(errorMessage);
+    form.reset();
     return;
   }
+}
 
-  loaderElement.classList.remove('visually-hidden');
-  
-  clearGallery();
-  // Очищаємо поле вводу
-  form.reset();
-
-  // Виконуємо запит до API для отримання зображень
-  responseData(query)
-    .then(data => {
-      const images = data.hits;
-      console.log('Отримані дані:', images); // Вивід даних у консоль для перевірки
-      if (images.length === 0) {
-        iziToast.show(errorMesage);
-        return;
-      }
-      // Додаємо отримані зображення в галерею
-      renderImages(data.hits);
-      lightbox.refresh();
-    })
-    // Обробляємо помилки
-    .catch(error => {
-      iziToast.show(errorMesage);
-    })
-    // Ховаємо лоадер
-    .finally(() => {
-      loaderElement.classList.add('visually-hidden');
-    });
+function emptyInputCheck(array) {
+  if (!array.length) {
+    iziToast.show(errorMessage);
+    clearGallery();
+    hideLoader();
+    return;
+  }
 }
